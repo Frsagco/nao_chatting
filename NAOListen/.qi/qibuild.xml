@@ -1,0 +1,4 @@
+<qibuild version="1">
+  <defaults config="my_toolchain_64b" />
+  <build />
+</qibuild>

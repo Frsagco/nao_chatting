@@ -1,0 +1,27 @@
+motion:
+  hi:
+    name: "hi"
+  guitar:
+    name: "guitar"
+  #dance:
+  #  name: "dance"
+
+posture:
+  sit:
+    name: "sit"
+    speed: 80
+#  flex:
+#    name: "flex"
+  stand:
+    name: "stand"
+    speed: 80
+  crouch:
+    name: "crouch"
+    speed: 80
+  rest:
+    name: "rest"
+    speed: 80
+
+vision:
+
+trackers:
