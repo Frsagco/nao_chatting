@@ -1,1 +1,0 @@
-python2.7 launch_script.py 
