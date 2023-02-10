@@ -24,6 +24,8 @@ namespace AL
  * and be run as a remote executable or as a plugin within NAOqi
  */
 
+
+
 class ALListen : public AL::ALSoundExtractor
 {
   public:
