@@ -20,7 +20,7 @@ class ChatGPT():
         # Define OpenAI API key
         try:
             with open(os.path.join(path, "open_ai.key"), 'r') as file:
-                openai.api_key = file.read().rstrip()
+                self.openai.api_key = file.read().rstrip()
         except:
             print("ChatGPT::init: Error: insert a open_ai.key file in the resource/ folder.")    
 
@@ -46,7 +46,7 @@ class ChatGPT():
             response_tmp = completion.choices[0].text
         except:
             print("ChatGPT::chat: Error on API request")
-            
+
         response = re.sub('\n+', '', response_tmp)
         response = re.sub(' +', ' ', response)
         response = response.strip()
