@@ -15,11 +15,17 @@ class ChatGPT():
 
     def __init__(self):
         print("ChatGPT::init: init.")
+        path = os.path.join(os.getcwd(), 'resource')
 
         # Define OpenAI API key
-        openai.api_key = "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"
+        try:
+            with open(os.path.join(path, "open_ai.key"), 'r') as file:
+                openai.api_key = file.read().rstrip()
+        except:
+            print("ChatGPT::init: Error: insert a open_ai.key file in the resource/ folder.")    
+
         # Set up the model and prompt
-        self.model_engine = "text-curie-001"
+        self.model_engine = "text-davinci-003"
 
         print("ChatGPT::init: done.")
 
@@ -29,15 +35,18 @@ class ChatGPT():
         if self.__isEnabled == False or not isinstance(request, str):
             return "I don't want to chat with you."
 
-        completion = openai.Completion.create(
-            engine=self.model_engine,
-            prompt=request,
-            max_tokens=1024,
-            n=1,
-            stop=None,
-            temperature=0.5)
-        response_tmp = completion.choices[0].text
-
+        try:
+            completion = openai.Completion.create(
+                engine=self.model_engine,
+                prompt=request,
+                max_tokens=1024,
+                n=1,
+                stop=None,
+                temperature=0.5)
+            response_tmp = completion.choices[0].text
+        except:
+            print("ChatGPT::chat: Error on API request")
+            
         response = re.sub('\n+', '', response_tmp)
         response = re.sub(' +', ' ', response)
         response = response.strip()

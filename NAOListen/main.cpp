@@ -110,8 +110,13 @@ int main(int argc, char* argv[])
   // AL::ALModule::createModule<your_module>(<broker_create>, <your_module>);
   AL::ALModule::createModule<ALListen>(broker, "ALListen");
 
-  while (true)
-    qi::os::sleep(1);
+  try {
+    while (true)
+      qi::os::sleep(1);
+  } catch(...) {
+    auto modurePtr = broker->getModuleByName("ALListen")
+    modulePtr->exit(); // try this fucking thing
+  }
 
   return 0;
 }
