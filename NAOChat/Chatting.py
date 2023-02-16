@@ -32,7 +32,7 @@ class ChatGPT():
     def chat(self, request):
         print("ChatGPT::chat: init.")
 
-        if self.__isEnabled == False or not isinstance(request, str):
+        if self.__isEnabled == False:
             return "I don't want to chat with you."
 
         try:
