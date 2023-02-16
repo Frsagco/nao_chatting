@@ -25,5 +25,8 @@ def main():
         cmd = "ssh-keyscan -H " + ip + " >> ~/.ssh/known_hosts"
         os.system(cmd)  
 
+    cmdOpenAI = "cp /root/open_ai.key " + argv[1]
+    os.system(cmdOpenAI)
+
 if __name__ == "__main__":
     main()
