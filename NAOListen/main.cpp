@@ -1,17 +1,99 @@
-/*
- * Copyright (c) 2012 Aldebaran Robotics. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can be
- * found in the COPYING file.
- */
 #include <iostream>
 #include <stdlib.h>
 #include <qi/os.hpp>
+#include <csignal>
 
 #include "allisten.h"
 
 #include <alcommon/almodule.h>
 #include <alcommon/albroker.h>
 #include <alcommon/albrokermanager.h>
+
+static bool loopEnabled;
+
+class ModuleBroker {
+
+    std::string brokerName;
+    int brokerPort;
+    std::string brokerIp;
+    boost::shared_ptr<AL::ALBroker> broker;
+    std::string pip;
+    int pport;
+
+  public:
+    ModuleBroker(std::string pip, 
+                  int pport, 
+                  std::string brokerName, 
+                  int brokerPort, 
+                  std::string brokerIp) {
+      
+      std::cout << "ModuleBroker::constructor: init" << std::endl;
+      
+      this->brokerName = brokerName;
+      this->brokerPort = brokerPort;
+      this->brokerIp = brokerIp;
+      this->pip = pip;
+      this->pport = pport;
+      
+      loopEnabled = true;
+      signal(SIGINT, this->end);
+      signal(SIGTERM, this->end);
+
+      std::cout << "ModuleBroker::constructor: done" << std::endl;
+    }
+
+
+    ~ModuleBroker() {
+      std::cout << "ModuleBroker::destructor: init" << std::endl;
+
+      auto modulePtr = this->broker->getModuleByName("ALListen");
+      modulePtr->exit(); // try this fucking thing
+      std::cout << "ModuleBroker::destructor: done" << std::endl;
+    }
+
+    int init() {
+      std::cout << "ModuleBroker::init: init" << std::endl;
+
+      try {
+          this->broker = AL::ALBroker::createBroker(this->brokerName,
+                                                    this->brokerIp,
+                                                    this->brokerPort,
+                                                    this->pip,
+                                                    this->pport,
+                                                    0);
+        } catch(...) {
+          std::cerr << "Fail to connect broker to: " << pip << ":" << pport << std::endl;
+
+          AL::ALBrokerManager::getInstance()->killAllBroker();
+          AL::ALBrokerManager::kill();
+
+          return -1;
+        }
+
+        // Deal with ALBrokerManager singleton (add your borker into NAOqi)
+        AL::ALBrokerManager::setInstance(broker->fBrokerManager.lock());
+        AL::ALBrokerManager::getInstance()->addBroker(broker);
+
+        // Now it's time to load your module with
+        // AL::ALModule::createModule<your_module>(<broker_create>, <your_module>);
+        AL::ALModule::createModule<ALListen>(broker, "ALListen");
+
+        std::cout << "ModuleBroker::init: done" << std::endl;
+        return 0;
+    }
+
+    void loop() {
+      std::cout << "ModuleBroker::loop: init" << std::endl;
+      
+      while (loopEnabled)
+       qi::os::sleep(1);
+    }
+
+    static void end(int sig) {
+      loopEnabled = false;
+    }
+};
+
 
 
 int main(int argc, char* argv[])
@@ -70,52 +152,15 @@ int main(int argc, char* argv[])
   // Need this to for SOAP serialization of floats to work
   setlocale(LC_NUMERIC, "C");
 
-  // A broker needs a name, an IP and a port:
-  const std::string brokerName = "mybroker";
-  // FIXME: would be a good idea to look for a free port first
-  int brokerPort = 54000;
-  // listen port of the broker (here an anything)
-  const std::string brokerIp = "0.0.0.0";
+  ModuleBroker mb (pip, pport, "mybroker" , 54000, "0.0.0.0");
 
-
-  // Create your own broker
-  boost::shared_ptr<AL::ALBroker> broker;
-  try
-  {
-    broker = AL::ALBroker::createBroker(
-        brokerName,
-        brokerIp,
-        brokerPort,
-        pip,
-        pport,
-        0    // you can pass various options for the broker creation,
-             // but default is fine
-      );
-  }
-  catch(...)
-  {
-    std::cerr << "Fail to connect broker to: " << pip << ":" << pport << std::endl;
-
-    AL::ALBrokerManager::getInstance()->killAllBroker();
-    AL::ALBrokerManager::kill();
-
-    return 1;
-  }
-
-  // Deal with ALBrokerManager singleton (add your borker into NAOqi)
-  AL::ALBrokerManager::setInstance(broker->fBrokerManager.lock());
-  AL::ALBrokerManager::getInstance()->addBroker(broker);
-
-  // Now it's time to load your module with
-  // AL::ALModule::createModule<your_module>(<broker_create>, <your_module>);
-  AL::ALModule::createModule<ALListen>(broker, "ALListen");
+  if (mb.init() != 0)
+    return -1;
 
   try {
-    while (true)
-      qi::os::sleep(1);
+    mb.loop();
   } catch(...) {
-    auto modurePtr = broker->getModuleByName("ALListen")
-    modulePtr->exit(); // try this fucking thing
+    std::cout << "Interrupted." << std::endl;
   }
 
   return 0;

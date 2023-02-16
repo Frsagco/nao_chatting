@@ -1,9 +1,3 @@
-/*
- * Copyright (c) 2012 Aldebaran Robotics. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can be
- * found in the COPYING file.
- */
-
 #include "allisten.h"
 #include <iostream>
 #include <alcommon/albroker.h>
@@ -44,9 +38,9 @@ ALListen::ALListen(boost::shared_ptr<ALBroker> broker, const std::string& name):
 
 ALListen::~ALListen() 
 {
-  qiLogInfo("module.example") << "ALListen::descructor init." << std::endl;
+  qiLogInfo("module.example") << "ALListen::destructor init." << std::endl;
   stopDetection();
-  qiLogInfo("module.example") << "ALListen::descructor done." << std::endl;
+  qiLogInfo("module.example") << "ALListen::destructor done." << std::endl;
 }
 
 void ALListen::init()
